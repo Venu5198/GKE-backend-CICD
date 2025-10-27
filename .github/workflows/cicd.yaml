@@ -35,15 +35,15 @@ jobs:
           gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
       - name: Build and push image to Artifact Registry
-        env:
-          IMAGE: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/${{ env.IMAGE_NAME }}
-        run: |
-          TAG=${{ github.sha }}
-          IMAGE_FULL="$IMAGE:$TAG"
-          # 👇 specify correct Dockerfile path
-          docker build -t "$IMAGE_FULL" -f app/Dockerfile ./app
-          docker push "$IMAGE_FULL"
-          echo "IMAGE=$IMAGE_FULL" >> $GITHUB_ENV
+		env:
+		 IMAGE: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/${{ env.IMAGE_NAME }}
+		run: |
+		 TAG=${{ github.sha }}
+		 IMAGE_FULL="$IMAGE:$TAG"
+		 # 👇 Dockerfile is in root, build context is also root
+		 docker build -t "$IMAGE_FULL" -f Dockerfile .
+		 docker push "$IMAGE_FULL"
+		 echo "IMAGE=$IMAGE_FULL" >> $GITHUB_ENV
 
       - name: Install GKE auth plugin
         run: gcloud components install gke-gcloud-auth-plugin --quiet
@@ -62,4 +62,3 @@ jobs:
           kubectl rollout status deployment/backend-deployment --timeout=120s
           kubectl get pods --selector=app=backend -o wide
           kubectl get svc backend-service -o wide
-
